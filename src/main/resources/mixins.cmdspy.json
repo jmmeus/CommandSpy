@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "org.samo_lego.commandspy.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "cmdspy.refmap.json",
+  "mixins": [],
+  "client": [],
+  "server": [
+    "MixinCommandBlockExecutor",
+    "MixinServerPlayNetworkHandler",
+    "SignBlockEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
