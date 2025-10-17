@@ -2,6 +2,7 @@ package org.samo_lego.commandspy;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -77,7 +78,7 @@ public class CommandSpy implements ModInitializer {
             // Vanilla way - all ops get message
             Text message = Text.translatable("chat.type.admin", source.getDisplayName(), text).formatted(Formatting.GRAY, Formatting.ITALIC);
             for (ServerPlayerEntity serverPlayerEntity : source.getServer().getPlayerManager().getPlayerList()) {
-                if (serverPlayerEntity != source.getPlayer() && source.getServer().getPlayerManager().isOperator(serverPlayerEntity.getGameProfile())) {
+                if (serverPlayerEntity != source.getPlayer() && source.getServer().getPlayerManager().isOperator(new PlayerConfigEntry(serverPlayerEntity.getGameProfile()))) {
                     serverPlayerEntity.sendMessage(message);
                 }
             }

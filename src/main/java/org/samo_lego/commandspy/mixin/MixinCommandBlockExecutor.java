@@ -1,5 +1,6 @@
 package org.samo_lego.commandspy.mixin;
 
+import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.world.CommandBlockExecutor;
 import net.minecraft.world.World;
@@ -25,7 +26,7 @@ public abstract class MixinCommandBlockExecutor {
     public abstract String getCommand();
 
     @Shadow
-    public abstract ServerCommandSource getSource();
+    public abstract ServerCommandSource getSource(CommandOutput output);
 
     // Injection for command block executing commands
     @Inject(method = "execute", at = @At(value = "RETURN"))
@@ -37,9 +38,9 @@ public abstract class MixinCommandBlockExecutor {
         if (enabled && CommandSpy.shouldLog(command)) {
             // Getting other info
             String dimension = world.getDimension().effects().getNamespace() + ":" + world.getDimension().effects().getPath();
-            int x = (int) (this.getSource().getPosition().x - 0.5);
-            int y = (int) this.getSource().getPosition().y;
-            int z = (int) (this.getSource().getPosition().z - 0.5);
+            int x = (int) (this.getSource(CommandOutput.DUMMY).getPosition().x - 0.5);
+            int y = (int) this.getSource(CommandOutput.DUMMY).getPosition().y;
+            int z = (int) (this.getSource(CommandOutput.DUMMY).getPosition().z - 0.5);
 
             // Saving those to hashmap for fancy printing with logger
             Map<String, String> valuesMap = new HashMap<>();
@@ -55,13 +56,13 @@ public abstract class MixinCommandBlockExecutor {
             if (result) {
                 CommandSpy.logCommand(
                         sub.replace(config.messages.commandBlockSuccessMessage),
-                        getSource(),
+                        getSource(CommandOutput.DUMMY),
                         MODID + ".log.command_blocks"
                 );
             } else if (!config.logging.logCommandBlockWhenSuccessful) {
                 CommandSpy.logCommand(
                         sub.replace(config.messages.commandBlockFailedMessage),
-                        getSource(),
+                        getSource(CommandOutput.DUMMY),
                         MODID + ".log.command_blocks"
                 );
             }

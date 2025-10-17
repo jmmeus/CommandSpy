@@ -35,7 +35,7 @@ public abstract class SignBlockEntityMixin {
             method = "runCommandClickEvent",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/command/CommandManager;executeWithPrefix(Lnet/minecraft/server/command/ServerCommandSource;Ljava/lang/String;)V"
+                    target = "Lnet/minecraft/server/command/CommandManager;parseAndExecute(Lnet/minecraft/server/command/ServerCommandSource;Ljava/lang/String;)V"
             )
     )
     private void catchSignCommand(ServerWorld world, PlayerEntity player, BlockPos pos, boolean front, CallbackInfoReturnable<Boolean> cir, @Local(ordinal = 0) ClickEvent clickEvent) {
