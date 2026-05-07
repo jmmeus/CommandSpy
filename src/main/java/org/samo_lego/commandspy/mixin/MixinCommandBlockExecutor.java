@@ -2,8 +2,8 @@ package org.samo_lego.commandspy.mixin;
 
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.CommandBlockExecutor;
-import net.minecraft.world.World;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 import org.samo_lego.commandspy.CommandSpy;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,21 +26,22 @@ public abstract class MixinCommandBlockExecutor {
     public abstract String getCommand();
 
     @Shadow
-    public abstract ServerCommandSource getSource(CommandOutput output);
+    public abstract ServerCommandSource getSource(ServerWorld world, CommandOutput output);
 
     // Injection for command block executing commands
     @Inject(method = "execute", at = @At(value = "RETURN"))
-    private void execute(World world, CallbackInfoReturnable<Boolean> cir) {
+    private void execute(ServerWorld world, CallbackInfoReturnable<Boolean> cir) {
         // Checking if mixin should be enabled todo
         boolean enabled = config.logging.logCommandBlockCommands;
         String command = this.getCommand();
 
         if (enabled && CommandSpy.shouldLog(command)) {
             // Getting other info
-            String dimension = world.getDimension().effects().getNamespace() + ":" + world.getDimension().effects().getPath();
-            int x = (int) (this.getSource(CommandOutput.DUMMY).getPosition().x - 0.5);
-            int y = (int) this.getSource(CommandOutput.DUMMY).getPosition().y;
-            int z = (int) (this.getSource(CommandOutput.DUMMY).getPosition().z - 0.5);
+            ServerCommandSource source = this.getSource(world, CommandOutput.DUMMY);
+            String dimension = world.getRegistryKey().getValue().toString();
+            int x = (int) (source.getPosition().x - 0.5);
+            int y = (int) source.getPosition().y;
+            int z = (int) (source.getPosition().z - 0.5);
 
             // Saving those to hashmap for fancy printing with logger
             Map<String, String> valuesMap = new HashMap<>();
@@ -56,13 +57,13 @@ public abstract class MixinCommandBlockExecutor {
             if (result) {
                 CommandSpy.logCommand(
                         sub.replace(config.messages.commandBlockSuccessMessage),
-                        getSource(CommandOutput.DUMMY),
+                        source,
                         MODID + ".log.command_blocks"
                 );
             } else if (!config.logging.logCommandBlockWhenSuccessful) {
                 CommandSpy.logCommand(
                         sub.replace(config.messages.commandBlockFailedMessage),
-                        getSource(CommandOutput.DUMMY),
+                        source,
                         MODID + ".log.command_blocks"
                 );
             }

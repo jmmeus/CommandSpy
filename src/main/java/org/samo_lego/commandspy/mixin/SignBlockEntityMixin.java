@@ -45,7 +45,7 @@ public abstract class SignBlockEntityMixin {
             String message = CommandSpy.config.messages.signMessage;
 
             // Getting other info
-            String dimension = world.getDimension().effects().getNamespace() + ":" + world.getDimension().effects().getPath();
+            String dimension = world.getRegistryKey().getValue().toString();
             int x = pos.getX();
             int y = pos.getY();
             int z = pos.getZ();
