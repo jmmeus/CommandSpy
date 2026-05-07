@@ -2,13 +2,13 @@ package org.samo_lego.commandspy;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.server.players.PlayerList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
 import org.samo_lego.commandspy.permission.PermissionHelper;
@@ -56,30 +56,30 @@ public class CommandSpy implements ModInitializer {
      * @param source     the command source
      * @param permission the permission to use if LuckPerms is loaded
      */
-    public static void logCommand(String command, ServerCommandSource source, String permission) {
+    public static void logCommand(String command, CommandSourceStack source, String permission) {
         if (config.logging.logToConsole) {
             LOGGER.info(command);
         }
 
-        MutableText text = Text.literal(command).formatted(Formatting.GRAY);
-        PlayerManager playerManager = source.getServer().getPlayerManager();
+        MutableComponent text = Component.literal(command).withStyle(ChatFormatting.GRAY);
+        PlayerList playerManager = source.getServer().getPlayerList();
 
         if (luckpermsLoaded) {
             // LuckPerms is loaded, so we will make additional permission check
 
-            List<ServerPlayerEntity> players = playerManager.getPlayerList();
+            List<ServerPlayer> players = playerManager.getPlayers();
 
             players.forEach(player -> {
                 if (PermissionHelper.checkPermission(player, permission)) {
-                    player.sendMessage(text);
+                    player.sendSystemMessage(text);
                 }
             });
         } else if (config.logging.logToOps) {
             // Vanilla way - all ops get message
-            Text message = Text.translatable("chat.type.admin", source.getDisplayName(), text).formatted(Formatting.GRAY, Formatting.ITALIC);
-            for (ServerPlayerEntity serverPlayerEntity : source.getServer().getPlayerManager().getPlayerList()) {
-                if (serverPlayerEntity != source.getPlayer() && source.getServer().getPlayerManager().isOperator(new PlayerConfigEntry(serverPlayerEntity.getGameProfile()))) {
-                    serverPlayerEntity.sendMessage(message);
+            Component message = Component.translatable("chat.type.admin", source.getDisplayName(), text).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
+            for (ServerPlayer serverPlayerEntity : source.getServer().getPlayerList().getPlayers()) {
+                if (serverPlayerEntity != source.getPlayer() && source.getServer().getPlayerList().isOp(new NameAndId(serverPlayerEntity.getGameProfile()))) {
+                    serverPlayerEntity.sendSystemMessage(message);
                 }
             }
         }

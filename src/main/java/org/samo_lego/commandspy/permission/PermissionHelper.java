@@ -1,8 +1,8 @@
 package org.samo_lego.commandspy.permission;
 
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.Entity;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.world.entity.Entity;
 
 /**
  * Permission checker.
@@ -16,7 +16,7 @@ public class PermissionHelper {
      * Checks permission for player using Lucko's
      * permission API.
      */
-    public static boolean checkPermission(CommandSource source, String permission) {
+    public static boolean checkPermission(SharedSuggestionProvider source, String permission) {
         return Permissions.check(source, permission, false);
     }
 

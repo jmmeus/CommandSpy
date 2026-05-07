@@ -1,9 +1,5 @@
 package org.samo_lego.commandspy.mixin;
 
-import net.minecraft.server.command.CommandOutput;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.CommandBlockExecutor;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 import org.samo_lego.commandspy.CommandSpy;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,31 +10,35 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.BaseCommandBlock;
 
 import static org.samo_lego.commandspy.CommandSpy.MODID;
 import static org.samo_lego.commandspy.CommandSpy.config;
 
 
-@Mixin(CommandBlockExecutor.class)
+@Mixin(BaseCommandBlock.class)
 public abstract class MixinCommandBlockExecutor {
 
     @Shadow
     public abstract String getCommand();
 
     @Shadow
-    public abstract ServerCommandSource getSource(ServerWorld world, CommandOutput output);
+    public abstract CommandSourceStack createCommandSourceStack(ServerLevel world, CommandSource output);
 
     // Injection for command block executing commands
-    @Inject(method = "execute", at = @At(value = "RETURN"))
-    private void execute(ServerWorld world, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "performCommand", at = @At(value = "RETURN"))
+    private void execute(ServerLevel world, CallbackInfoReturnable<Boolean> cir) {
         // Checking if mixin should be enabled todo
         boolean enabled = config.logging.logCommandBlockCommands;
         String command = this.getCommand();
 
         if (enabled && CommandSpy.shouldLog(command)) {
             // Getting other info
-            ServerCommandSource source = this.getSource(world, CommandOutput.DUMMY);
-            String dimension = world.getRegistryKey().getValue().toString();
+            CommandSourceStack source = this.createCommandSourceStack(world, CommandSource.NULL);
+            String dimension = world.dimension().identifier().toString();
             int x = (int) (source.getPosition().x - 0.5);
             int y = (int) source.getPosition().y;
             int z = (int) (source.getPosition().z - 0.5);
